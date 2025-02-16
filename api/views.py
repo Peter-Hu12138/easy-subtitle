@@ -1,5 +1,6 @@
 from datetime import timezone
-
+import uuid
+from django.core.exceptions import BadRequest
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from utils.formatting import seconds_to_str_in_srt
@@ -17,19 +18,17 @@ from .forms import FileUploadForm
 def task(request: HttpRequest):
     file_name_uploaded = "audio_file"
     file = request.FILES[file_name_uploaded]
-    if 0 < file.size <= 1024 * 1024 * 100:  # validate that it is from a trusted source
-        file_data = file.read()
-    else:
-        # need chunking for extremely large files
-        # or raise an error
-        raise Exception
-    instance = models.Task()
-    instance.uuid = f"test_{timezone.now().__str__()}"
-    instance.audio_file.save(f"./audio/audio_{instance.uuid}.mp3", File(file), save=True)
-    instance.save()
-    return HttpResponse("SUCC")
-    # audio_list, len_list = chunk(file_data)
 
+    if file.size <= 0 or file.size >= 1024 * 1024 * 100:  # check file size
+        raise BadRequest
+    # TODO: cloudflare captcha
+
+    instance = models.Task()
+    instance.uuid = str(uuid.uuid4())
+    instance.audio_file.save("audio_" + instance.uuid + ".mp3", File(file), save=True)
+    instance.save()
+
+    return HttpResponse("SUCC")
 
 
 def task_status(request: HttpRequest):
