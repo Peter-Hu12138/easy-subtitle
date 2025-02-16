@@ -12,7 +12,7 @@ import threading
 import time
 
 l = threading.Lock()
-RUN = True
+RUN = False
 
 def run_background_task():
     from .models import Task
@@ -24,6 +24,7 @@ def run_background_task():
         task_to_deal_with = Task.objects.filter(status="IPR").order_by("created_at").first()
         if task_to_deal_with:
             task_to_deal_with.status = "PROC"
+            task_to_deal_with.save()
         l.release()
 
         # deal_task
@@ -61,8 +62,6 @@ def run_background_task():
             response.write(srt_str)
             return response
             # update the model: change status and
-        else:
-            pass
 
 class ApiConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"

@@ -1,9 +1,8 @@
 from django.db import models
-from django.db.models import TextField
-from django.db.models.fields import CharField, IntegerField
 
+def get_file_name(instance, filename):
+    return f"/audio/audio_{instance.uuid}.mp3" # might cause some problems
 
-# Create your models here.
 class Task(models.Model):
     STATUS_CHOICES = {
         "IPR": "In progress",
@@ -11,7 +10,8 @@ class Task(models.Model):
         "FAL": "Failed",
         "SUCC": "Successful"
     }
-    uuid = CharField(max_length=100, unique=True)
-    status = CharField(max_length=5, choices=STATUS_CHOICES, default="IPR")
-    srt_content = TextField()
+    uuid = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=5, choices=STATUS_CHOICES, default="IPR")
+    srt_content = models.TextField(default="")
     created_at = models.DateTimeField(auto_now_add=True)
+    audio_file = models.FileField(upload_to=get_file_name)
